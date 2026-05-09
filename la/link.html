@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Anime Text to JSON Converter</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#0f1117;
+    color:white;
+    margin:0;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+textarea{
+    width:100%;
+    height:80vh;
+    background:#1b1f2a;
+    color:#fff;
+    border:none;
+    outline:none;
+    padding:15px;
+    border-radius:10px;
+    resize:none;
+    font-size:14px;
+}
+
+pre{
+    background:#1b1f2a;
+    padding:15px;
+    border-radius:10px;
+    overflow:auto;
+    height:80vh;
+    margin:0;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+}
+
+button{
+    background:#4f46e5;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+    margin-bottom:15px;
+}
+
+button:hover{
+    background:#6366f1;
+}
+
+@media(max-width:900px){
+    .container{
+        grid-template-columns:1fr;
+    }
+
+    textarea,
+    pre{
+        height:45vh;
+    }
+}
+</style>
+</head>
+<body>
+
+<h1>Anime Text → JSON Converter</h1>
+
+<button onclick="convertText()">Convert to JSON</button>
+
+<div class="container">
+    <textarea id="input" placeholder="Paste anime text here..."></textarea>
+
+    <pre id="output">{}</pre>
+</div>
+
+<script>
+function convertText() {
+
+    const text = document.getElementById("input").value;
+
+    const lines = text.split("\n").map(v => v.trim());
+
+    const result = {
+        title: "",
+        japanese_title: "",
+        type: "",
+        seasons: [],
+        specials: [],
+        extra: []
+    };
+
+    // TITLE
+    result.title = lines[0] || "";
+
+    // JAPANESE TITLE
+    for(let line of lines){
+        if(/[ぁ-んァ-ン一-龯]/.test(line)){
+            result.japanese_title = line;
+            break;
+        }
+    }
+
+    // TYPE
+    const typeLine = lines.find(v => v.startsWith("Type:"));
+    if(typeLine){
+        result.type = typeLine.replace("Type:", "").trim();
+    }
+
+    let currentSeason = null;
+    let currentExtra = null;
+
+    for(let i=0;i<lines.length;i++){
+
+        const line = lines[i];
+
+        // SEASON
+        if(/SEASON\s+\d+/i.test(line)){
+
+            const seasonNumber = line.match(/\d+/)?.[0];
+
+            currentSeason = {
+                season: Number(seasonNumber),
+                episodes: []
+            };
+
+            result.seasons.push(currentSeason);
+
+            continue;
+        }
+
+        // SPECIALS
+        if(line.toUpperCase().includes("SPECIALS")){
+
+            currentSeason = {
+                season: "Specials",
+                episodes: []
+            };
+
+            result.specials = currentSeason.episodes;
+
+            continue;
+        }
+
+        // EXTRA MOVIE / OVA
+        if(
+            line.includes("Phantom Adventure") ||
+            line.includes("Miraculous Encounter")
+        ){
+
+            currentExtra = {
+                title: line,
+                episodes: []
+            };
+
+            result.extra.push(currentExtra);
+
+            continue;
+        }
+
+        // EPISODE LINKS
+        const epMatch = line.match(/^(\d+)\s*:\s*(https?:\/\/.+)$/i);
+
+        if(epMatch){
+
+            const ep = epMatch[1];
+            const url = epMatch[2];
+
+            const epObj = {
+                episode: Number(ep),
+                link: url
+            };
+
+            if(currentExtra){
+                currentExtra.episodes.push(epObj);
+            }
+            else if(currentSeason){
+                currentSeason.episodes.push(epObj);
+            }
+
+            continue;
+        }
+
+        // SEASON 3 SINGLE LINK
+        const singleLink = line.match(/^(https?:\/\/.+)$/i);
+
+        if(singleLink && currentSeason){
+
+            currentSeason.episodes.push({
+                episode: 1,
+                link: singleLink[1]
+            });
+        }
+    }
+
+    document.getElementById("output").textContent =
+        JSON.stringify(result, null, 2);
+}
+</script>
+
+</body>
+</html>
