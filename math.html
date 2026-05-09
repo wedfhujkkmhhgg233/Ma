@@ -7,67 +7,117 @@
 
 <style>
 body {
-    font-family: Arial;
-    background: #0f172a;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
     color: white;
-    text-align: center;
-    padding: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
 .container {
-    max-width: 420px;
-    margin: auto;
-    background: #1e293b;
-    padding: 15px;
-    border-radius: 12px;
+    width: 100%;
+    max-width: 450px;
+    background: #111827;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(56,189,248,0.3);
 }
 
-h1 { font-size: 20px; }
+h1 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 10px;
+}
 
 .question {
-    font-size: 30px;
-    margin: 15px 0;
+    font-size: 36px;
+    text-align: center;
+    margin: 20px 0;
+    letter-spacing: 2px;
+}
+
+.timer {
+    text-align: center;
+    font-size: 18px;
+    color: #facc15;
 }
 
 input, select {
     width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 8px;
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 10px;
     border: none;
     font-size: 16px;
+    text-align: center;
 }
 
 button {
     width: 100%;
-    padding: 10px;
-    margin-top: 5px;
+    padding: 12px;
+    margin-top: 8px;
     border: none;
-    border-radius: 8px;
-    background: #38bdf8;
+    border-radius: 10px;
     font-size: 16px;
     cursor: pointer;
+    transition: 0.2s;
 }
 
-button:hover { background: #0ea5e9; }
+button:hover {
+    transform: scale(1.02);
+}
+
+.submit {
+    background: #38bdf8;
+    color: black;
+    font-weight: bold;
+}
+
+.start {
+    background: #22c55e;
+}
+
+.stop {
+    background: #ef4444;
+}
 
 .row {
     display: flex;
-    gap: 5px;
+    gap: 8px;
 }
 
 .row label {
     flex: 1;
-    background: #334155;
-    padding: 8px;
-    border-radius: 6px;
+    background: #1f2937;
+    padding: 10px;
+    border-radius: 10px;
     font-size: 14px;
+    text-align: center;
 }
 
-.timer { color: #facc15; }
-.score { color: #4ade80; }
+.score {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 18px;
+    color: #4ade80;
+}
 
-small { opacity: 0.8; }
+.feedback {
+    text-align: center;
+    margin-top: 8px;
+    font-weight: bold;
+    min-height: 20px;
+}
+
+small {
+    display: block;
+    text-align: center;
+    opacity: 0.6;
+    margin-top: 10px;
+}
 </style>
 </head>
 
@@ -78,52 +128,51 @@ small { opacity: 0.8; }
 
     <div class="timer">Time: <span id="time">10</span>s</div>
 
-    <div class="question" id="question">Setup first</div>
+    <div class="question" id="question">Press Start</div>
 
-    <input type="number" id="answer" placeholder="Answer">
+    <input type="number" id="answer" placeholder="Type answer">
 
-    <button onclick="checkAnswer()">Submit</button>
+    <button class="submit" onclick="checkAnswer()">Submit</button>
 
-    <div class="info">
-        Score: <span class="score" id="score">0</span>
-    </div>
-
-    <div id="feedback"></div>
+    <div class="score">Score: <span id="score">0</span></div>
+    <div class="feedback" id="feedback"></div>
 
     <hr>
-
-    <h3>⚙ Settings</h3>
 
     <div class="row">
         <label><input type="checkbox" id="add" checked> +</label>
         <label><input type="checkbox" id="sub" checked> −</label>
     </div>
+
     <div class="row">
         <label><input type="checkbox" id="mul"> ×</label>
         <label><input type="checkbox" id="div"> ÷</label>
     </div>
 
     <select id="digits">
-        <option value="1">1 Digit (easy gap training)</option>
+        <option value="1">1 Digit (gap training)</option>
         <option value="2">2 Digits</option>
         <option value="3">3 Digits</option>
         <option value="4">4+ Digits</option>
     </select>
 
-    <button onclick="startGame()">▶ Start</button>
-    <button onclick="stopGame()">⏸ Stop</button>
+    <button class="start" onclick="startGame()">▶ Start</button>
+    <button class="stop" onclick="stopGame()">⏸ Stop</button>
 
-    <small>All data saved offline in browser</small>
+    <small>Fully offline • Saved in browser</small>
 </div>
 
 <script>
-let num1, num2, op, answer;
-let score = localStorage.getItem("score") || 0;
+let num1, num2, op, correct;
+let score = Number(localStorage.getItem("score") || 0);
 let running = false;
 let timer;
 let time = 10;
 
 document.getElementById("score").innerText = score;
+
+const answerBox = document.getElementById("answer");
+const feedback = document.getElementById("feedback");
 
 function saveSettings() {
     localStorage.setItem("settings", JSON.stringify({
@@ -145,11 +194,10 @@ function loadSettings() {
     div.checked = s.div;
     digits.value = s.digits;
 }
-
 loadSettings();
 
 function getNumber() {
-    let d = parseInt(digits.value);
+    let d = Number(digits.value);
     let min = Math.pow(10, d - 1);
     let max = Math.pow(10, d) - 1;
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -162,8 +210,7 @@ function pickOp() {
     if (mul.checked) ops.push("*");
     if (div.checked) ops.push("/");
 
-    if (ops.length === 0) return "+";
-    return ops[Math.floor(Math.random() * ops.length)];
+    return ops.length ? ops[Math.floor(Math.random() * ops.length)] : "+";
 }
 
 function generate() {
@@ -175,20 +222,20 @@ function generate() {
 
     if (op === "/") {
         num2 = Math.max(1, num2);
-        num1 = num1 - (num1 % num2); // clean division
+        num1 = num1 - (num1 % num2);
     }
 
     switch(op) {
-        case "+": answer = num1 + num2; break;
-        case "-": answer = num1 - num2; break;
-        case "*": answer = num1 * num2; break;
-        case "/": answer = num1 / num2; break;
+        case "+": correct = num1 + num2; break;
+        case "-": correct = num1 - num2; break;
+        case "*": correct = num1 * num2; break;
+        case "/": correct = num1 / num2; break;
     }
 
-    document.getElementById("question").innerText =
-        `${num1} ${op} ${num2}`;
+    document.getElementById("question").innerText = `${num1} ${op} ${num2}`;
+    answerBox.value = "";
+    feedback.innerText = "";
 
-    document.getElementById("answer").value = "";
     resetTimer();
 }
 
@@ -197,11 +244,11 @@ function checkAnswer() {
 
     let user = Number(answerBox.value);
 
-    if (user === answer) {
+    if (user === correct) {
         score++;
-        feedback.innerText = "✅ Correct";
+        feedback.innerText = "✅ Correct!";
     } else {
-        feedback.innerText = "❌ Answer: " + answer;
+        feedback.innerText = "❌ Answer: " + correct;
     }
 
     localStorage.setItem("score", score);
@@ -220,7 +267,7 @@ function resetTimer() {
         document.getElementById("time").innerText = time;
 
         if (time <= 0) {
-            feedback.innerText = "⏱ Time up! Answer: " + answer;
+            feedback.innerText = "⏱ Time up! Answer: " + correct;
             generate();
         }
     }, 1000);
