@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Math Speed Trainer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.container {
+    max-width: 400px;
+    margin: auto;
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px black;
+}
+
+h1 {
+    font-size: 22px;
+}
+
+.question {
+    font-size: 28px;
+    margin: 20px 0;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    font-size: 18px;
+    border-radius: 8px;
+    border: none;
+    text-align: center;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    background: #38bdf8;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0ea5e9;
+}
+
+.info {
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+.timer {
+    color: #facc15;
+    font-size: 18px;
+}
+
+.score {
+    color: #4ade80;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>⚡ Math Speed Trainer</h1>
+
+    <div class="timer">Time: <span id="time">10</span>s</div>
+
+    <div class="question" id="question">Loading...</div>
+
+    <input type="number" id="answer" placeholder="Your answer">
+
+    <button onclick="checkAnswer()">Submit</button>
+
+    <div class="info">
+        Score: <span class="score" id="score">0</span>
+    </div>
+
+    <div class="info" id="feedback"></div>
+</div>
+
+<script>
+let num1, num2, operator, correctAnswer;
+let score = 0;
+let timeLeft = 10;
+let timer;
+
+function generateQuestion() {
+    const ops = ["+", "-", "*", "/"];
+    operator = ops[Math.floor(Math.random() * ops.length)];
+
+    num1 = Math.floor(Math.random() * 20) + 1;
+    num2 = Math.floor(Math.random() * 20) + 1;
+
+    if (operator === "/") {
+        num1 = num1 * num2; // ensure clean division
+    }
+
+    switch(operator) {
+        case "+": correctAnswer = num1 + num2; break;
+        case "-": correctAnswer = num1 - num2; break;
+        case "*": correctAnswer = num1 * num2; break;
+        case "/": correctAnswer = num1 / num2; break;
+    }
+
+    document.getElementById("question").innerText =
+        `${num1} ${operator} ${num2}`;
+
+    document.getElementById("answer").value = "";
+    document.getElementById("feedback").innerText = "";
+
+    resetTimer();
+}
+
+function checkAnswer() {
+    let userAns = Number(document.getElementById("answer").value);
+
+    if (userAns === correctAnswer) {
+        score++;
+        document.getElementById("feedback").innerText = "✅ Correct!";
+    } else {
+        document.getElementById("feedback").innerText =
+            `❌ Wrong! Answer: ${correctAnswer}`;
+    }
+
+    document.getElementById("score").innerText = score;
+    generateQuestion();
+}
+
+function resetTimer() {
+    clearInterval(timer);
+    timeLeft = 10;
+    document.getElementById("time").innerText = timeLeft;
+
+    timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("time").innerText = timeLeft;
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            document.getElementById("feedback").innerText =
+                `⏱ Time's up! Answer: ${correctAnswer}`;
+            generateQuestion();
+        }
+    }, 1000);
+}
+
+document.getElementById("answer").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") checkAnswer();
+});
+
+generateQuestion();
+</script>
+
+</body>
+</html>
