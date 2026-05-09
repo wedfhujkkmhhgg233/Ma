@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Math Trainer Pro</title>
+<title>Math Trainer Pro FIXED</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -28,20 +28,16 @@ body {
 
 h1 {
     text-align: center;
-    font-size: 22px;
-    margin-bottom: 10px;
 }
 
 .question {
     font-size: 36px;
     text-align: center;
     margin: 20px 0;
-    letter-spacing: 2px;
 }
 
 .timer {
     text-align: center;
-    font-size: 18px;
     color: #facc15;
 }
 
@@ -51,7 +47,6 @@ input, select {
     margin: 6px 0;
     border-radius: 10px;
     border: none;
-    font-size: 16px;
     text-align: center;
 }
 
@@ -61,28 +56,13 @@ button {
     margin-top: 8px;
     border: none;
     border-radius: 10px;
-    font-size: 16px;
     cursor: pointer;
-    transition: 0.2s;
+    font-size: 16px;
 }
 
-button:hover {
-    transform: scale(1.02);
-}
-
-.submit {
-    background: #38bdf8;
-    color: black;
-    font-weight: bold;
-}
-
-.start {
-    background: #22c55e;
-}
-
-.stop {
-    background: #ef4444;
-}
+.submit { background: #38bdf8; font-weight: bold; }
+.start { background: #22c55e; }
+.stop { background: #ef4444; }
 
 .row {
     display: flex;
@@ -94,29 +74,19 @@ button:hover {
     background: #1f2937;
     padding: 10px;
     border-radius: 10px;
-    font-size: 14px;
     text-align: center;
 }
 
 .score {
     text-align: center;
     margin-top: 10px;
-    font-size: 18px;
     color: #4ade80;
 }
 
 .feedback {
     text-align: center;
     margin-top: 8px;
-    font-weight: bold;
     min-height: 20px;
-}
-
-small {
-    display: block;
-    text-align: center;
-    opacity: 0.6;
-    margin-top: 10px;
 }
 </style>
 </head>
@@ -124,13 +94,13 @@ small {
 <body>
 
 <div class="container">
-    <h1>⚡ Math Trainer Pro</h1>
+    <h1>⚡ Math Trainer Pro FIX</h1>
 
     <div class="timer">Time: <span id="time">10</span>s</div>
 
     <div class="question" id="question">Press Start</div>
 
-    <input type="number" id="answer" placeholder="Type answer">
+    <input type="number" id="answer" placeholder="Answer">
 
     <button class="submit" onclick="checkAnswer()">Submit</button>
 
@@ -150,7 +120,7 @@ small {
     </div>
 
     <select id="digits">
-        <option value="1">1 Digit (gap training)</option>
+        <option value="1">1 Digit</option>
         <option value="2">2 Digits</option>
         <option value="3">3 Digits</option>
         <option value="4">4+ Digits</option>
@@ -159,7 +129,6 @@ small {
     <button class="start" onclick="startGame()">▶ Start</button>
     <button class="stop" onclick="stopGame()">⏸ Stop</button>
 
-    <small>Fully offline • Saved in browser</small>
 </div>
 
 <script>
@@ -171,16 +140,17 @@ let time = 10;
 
 document.getElementById("score").innerText = score;
 
-const answerBox = document.getElementById("answer");
-const feedback = document.getElementById("feedback");
+function el(id) {
+    return document.getElementById(id);
+}
 
 function saveSettings() {
     localStorage.setItem("settings", JSON.stringify({
-        add: add.checked,
-        sub: sub.checked,
-        mul: mul.checked,
-        div: div.checked,
-        digits: digits.value
+        add: el("add").checked,
+        sub: el("sub").checked,
+        mul: el("mul").checked,
+        div: el("div").checked,
+        digits: el("digits").value
     }));
 }
 
@@ -188,16 +158,17 @@ function loadSettings() {
     let s = JSON.parse(localStorage.getItem("settings"));
     if (!s) return;
 
-    add.checked = s.add;
-    sub.checked = s.sub;
-    mul.checked = s.mul;
-    div.checked = s.div;
-    digits.value = s.digits;
+    el("add").checked = s.add;
+    el("sub").checked = s.sub;
+    el("mul").checked = s.mul;
+    el("div").checked = s.div;
+    el("digits").value = s.digits;
 }
+
 loadSettings();
 
 function getNumber() {
-    let d = Number(digits.value);
+    let d = Number(el("digits").value);
     let min = Math.pow(10, d - 1);
     let max = Math.pow(10, d) - 1;
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -205,10 +176,10 @@ function getNumber() {
 
 function pickOp() {
     let ops = [];
-    if (add.checked) ops.push("+");
-    if (sub.checked) ops.push("-");
-    if (mul.checked) ops.push("*");
-    if (div.checked) ops.push("/");
+    if (el("add").checked) ops.push("+");
+    if (el("sub").checked) ops.push("-");
+    if (el("mul").checked) ops.push("*");
+    if (el("div").checked) ops.push("/");
 
     return ops.length ? ops[Math.floor(Math.random() * ops.length)] : "+";
 }
@@ -232,9 +203,9 @@ function generate() {
         case "/": correct = num1 / num2; break;
     }
 
-    document.getElementById("question").innerText = `${num1} ${op} ${num2}`;
-    answerBox.value = "";
-    feedback.innerText = "";
+    el("question").innerText = `${num1} ${op} ${num2}`;
+    el("answer").value = "";
+    el("feedback").innerText = "";
 
     resetTimer();
 }
@@ -242,17 +213,17 @@ function generate() {
 function checkAnswer() {
     if (!running) return;
 
-    let user = Number(answerBox.value);
+    let user = Number(el("answer").value);
 
     if (user === correct) {
         score++;
-        feedback.innerText = "✅ Correct!";
+        el("feedback").innerText = "✅ Correct!";
     } else {
-        feedback.innerText = "❌ Answer: " + correct;
+        el("feedback").innerText = "❌ Answer: " + correct;
     }
 
     localStorage.setItem("score", score);
-    document.getElementById("score").innerText = score;
+    el("score").innerText = score;
 
     generate();
 }
@@ -260,14 +231,14 @@ function checkAnswer() {
 function resetTimer() {
     clearInterval(timer);
     time = 10;
-    document.getElementById("time").innerText = time;
+    el("time").innerText = time;
 
     timer = setInterval(() => {
         time--;
-        document.getElementById("time").innerText = time;
+        el("time").innerText = time;
 
         if (time <= 0) {
-            feedback.innerText = "⏱ Time up! Answer: " + correct;
+            el("feedback").innerText = "⏱ Time up! Answer: " + correct;
             generate();
         }
     }, 1000);
@@ -282,7 +253,7 @@ function startGame() {
 function stopGame() {
     running = false;
     clearInterval(timer);
-    document.getElementById("question").innerText = "Paused";
+    el("question").innerText = "Paused";
 }
 </script>
 
