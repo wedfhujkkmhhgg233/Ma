@@ -1,0 +1,137 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live HTML Runner</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }body {
+  background: #111827;
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  padding: 12px;
+  background: #1f2937;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid #374151;
+}
+
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #2563eb;
+  color: white;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.container {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+textarea {
+  width: 50%;
+  height: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 20px;
+  background: #0f172a;
+  color: #e5e7eb;
+  font-size: 15px;
+  border-right: 1px solid #374151;
+}
+
+iframe {
+  width: 50%;
+  height: 100%;
+  border: none;
+  background: white;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: auto;
+}
+
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="title">Live HTML Runner</div>
+    <button onclick="runCode()">Run HTML</button>
+    <button onclick="clearCode()">Clear</button>
+  </div>  <div class="container">
+    <textarea id="editor">
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background: black;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial;
+    }h1 {
+  color: cyan;
+  animation: glow 1s infinite alternate;
+}
+
+@keyframes glow {
+  from { text-shadow: 0 0 10px cyan; }
+  to { text-shadow: 0 0 30px cyan; }
+}
+
+  </style>
+</head>
+<body>
+  <h1>Hello World</h1>  <script>
+    console.log("JavaScript works!");
+  </script></body>
+</html>
+    </textarea><iframe id="preview"></iframe>
+
+  </div>  <script>
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+
+    function runCode() {
+      const code = editor.value;
+
+      const iframeDoc = preview.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(code);
+      iframeDoc.close();
+    }
+
+    function clearCode() {
+      editor.value = '';
+      runCode();
+    }
+
+    runCode();
+  </script></body>
+</html>
